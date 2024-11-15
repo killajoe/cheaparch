@@ -93,15 +93,6 @@ sed -i 's/^# %wheel ALL=(ALL:ALL) ALL/%wheel ALL=(ALL:ALL) ALL/' /etc/sudoers
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
-# Find the swap file offset
-SWAP_OFFSET=$(filefrag -v /swap/swapfile | grep " 0:" | awk '{print $4}')
-
-# Set resume_offset in GRUB
-echo "GRUB_CMDLINE_LINUX=\"resume=/swap/swapfile resume_offset=$SWAP_OFFSET\"" >> /etc/default/grub
-
-# Regenerate GRUB config
-grub-mkconfig -o /boot/grub/grub.cfg
-
 # Install a Desktop
 pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-terminal xorg-server noto-fonts pipewire pipewire-jack pipewire-pulse firefox glances
 
@@ -109,7 +100,18 @@ pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-
 systemctl enable NetworkManager lightdm
 EOF
 
-# Step 9: Final Steps
+# Step 9: Set resume_offset in GRUB for Hibernate
+info "Configuring hibernation with resume offset..."
+SWAP_OFFSET=$(filefrag -v /mnt/swap/swapfile | grep " 0:" | awk '{print $4}')
+sed -i "/^GRUB_CMDLINE_LINUX=/s/\"$/ resume=\/swap/swapfile resume_offset=$SWAP_OFFSET\"/" /mnt/etc/default/grub
+arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+
+# Step 10: Enable hibernation in initramfs
+info "Enabling hibernation in initramfs..."
+arch-chroot /mnt sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
+arch-chroot /mnt mkinitcpio -P
+
+# Step 11: Final Steps
 info "Installation complete! Unmounting and rebooting..."
 umount -R /mnt
 echo "system will now reboot!"
