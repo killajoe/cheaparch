@@ -8,7 +8,7 @@ DISK="/dev/sda" # Replace with your actual disk
 HOSTNAME="chatarch"
 USERNAME="joe" # Replace with your desired username
 PASSWORD="joe" # Replace with your password
-SWAP_SIZE="8G" # Replace with the size of your swap
+SWAP_SIZE="8g" # Replace with the size of your swap
 REGION="Europe"
 CITY="Berlin"
 
@@ -52,9 +52,9 @@ mount "${DISK}1" /mnt/boot/efi
 
 # Step 5: Create Swap File with Hibernate Support
 info "Creating swap file..."
-fallocate -l "$SWAP_SIZE" /mnt/swap/swapfile   # This will create a swap file with no holes
-chmod 600 /mnt/swap/swapfile
-mkswap /mnt/swap/swapfile
+fallocate -l "$SWAP_SIZE" /mnt/swap/swapfile
+btrfs filesystem mkswapfile --size "$SWAP_SIZE" --uuid clear /swap/swapfile
+swapon /swap/swapfile
 
 # Step 6: Install Base System
 info "Installing base system..."
