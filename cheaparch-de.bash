@@ -118,7 +118,7 @@ info "Configuring Snapper for regular snapshots..."
 # We will configure Snapper outside the chroot due to DBus issues inside chroot
 
 # Create Snapper configurations for / and /home outside of the chroot
-pacman-Sy --noconfirm snapper
+pacman -Sy --noconfirm snapper
 snapper -c root create-config /mnt/
 snapper -c home create-config /mnt/home
 
