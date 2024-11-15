@@ -73,7 +73,7 @@ hwclock --systohc
 echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
 echo "LANG=de_DE.UTF-8" > /etc/locale.conf
-echo "KEYMAP=de" > /etc/vconsole.conf
+echo "KEYMAP=de-latin1" > /etc/vconsole.conf
 
 # Set hostname
 echo "$HOSTNAME" > /etc/hostname
