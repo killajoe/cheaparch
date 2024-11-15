@@ -52,9 +52,8 @@ mount "${DISK}1" /mnt/boot/efi
 
 # Step 5: Create Swap File with Hibernate Support
 info "Creating swap file..."
-fallocate -l "$SWAP_SIZE" /mnt/swap/swapfile
-btrfs filesystem mkswapfile --size "$SWAP_SIZE" --uuid clear /swap/swapfile
-swapon /swap/swapfile
+btrfs filesystem mkswapfile --size "$SWAP_SIZE" --uuid clear /mnt/swap/swapfile
+swapon /mnt/swap/swapfile
 
 # Step 6: Install Base System
 info "Installing base system..."
