@@ -4,11 +4,13 @@
 set -e
 
 # Variables (edit these as needed)
-DISK="/dev/sdX" # Replace with your actual disk
-HOSTNAME="yourostname"
-USERNAME="username" # Replace with your desired username
-PASSWORD="password" # Replace with your password
-SWAP_SIZE="XG" # Replace with the size of your swap
+DISK="/dev/sda" # Replace with your actual disk
+HOSTNAME="chatarch"
+USERNAME="joe" # Replace with your desired username
+PASSWORD="joe" # Replace with your password
+SWAP_SIZE="8G" # Replace with the size of your swap
+REGION="Europe"
+CITY="Berlin"
 
 # Function to print status messages
 info() {
@@ -35,30 +37,40 @@ btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
 btrfs subvolume create /mnt/@log
 btrfs subvolume create /mnt/@cache
+btrfs subvolume create /mnt/@swap
 umount /mnt
 
 # Step 4: Mount Subvolumes
 info "Mounting subvolumes..."
 mount -o subvol=@,compress=zstd "${DISK}2" /mnt
-mkdir -p /mnt/{home,var/log,var/cache,boot/efi}
+mkdir -p /mnt/{home,var/log,var/cache,boot/efi,swap}
 mount -o subvol=@home "${DISK}2" /mnt/home
 mount -o subvol=@log "${DISK}2" /mnt/var/log
 mount -o subvol=@cache "${DISK}2" /mnt/var/cache
+mount -o subvol=@swap "${DISK}2" /mnt/swap
 mount "${DISK}1" /mnt/boot/efi
 
-# Step 5: Install Base System
+# Step 5: Create Swap File with Hibernate Support
+info "Creating swap file..."
+fallocate -l "$SWAP_SIZE" /mnt/swap/swapfile   # This will create a swap file with no holes
+chmod 600 /mnt/swap/swapfile
+mkswap /mnt/swap/swapfile
+
+# Step 6: Install Base System
 info "Installing base system..."
 pacstrap /mnt base linux linux-firmware btrfs-progs sudo nano vim grub efibootmgr networkmanager snapper
 
-# Step 6: Generate FSTAB
+# Step 7: Generate FSTAB
 info "Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab
+info "adding swapfile to fstab"
+echo "/swap/swapfile none swap defaults 0 0" >> /mnt/etc/fstab
 
-# Step 7: Configure System
+# Step 8: Configure System
 info "Configuring system..."
 arch-chroot /mnt /bin/bash <<EOF
 # Set timezone and locale
-ln -sf /usr/share/zoneinfo/Region/City /etc/localtime
+ln -sf /usr/share/zoneinfo/"${region}"/"${city}" /etc/localtime
 hwclock --systohc
 echo "de_DE.UTF-8 UTF-8" >> /etc/locale.gen
 locale-gen
@@ -90,14 +102,9 @@ pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-
 systemctl enable NetworkManager lightdm
 EOF
 
-# Step 8: Create Swap File with Hibernate Support
-info "Creating swap file..."
-fallocate -l "$SWAP_SIZE" /mnt/swapfile   # This will create a swap file with no holes
-chmod 600 /mnt/swapfile
-mkswap /mnt/swapfile
-echo "/swapfile none swap sw 0 0" >> /mnt/etc/fstab
-
 # Step 9: Final Steps
 info "Installation complete! Unmounting and rebooting..."
 umount -R /mnt
+echo "system will now reboot!"
+sleep 10
 reboot
