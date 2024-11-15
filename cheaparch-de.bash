@@ -102,18 +102,19 @@ EOF
 
 # Step 9: Set resume_offset in GRUB for Hibernate
 info "Configuring hibernation with resume offset..."
-SWAP_OFFSET=$(filefrag -v /mnt/swapfile | grep " 0:" | awk '{print $4}')
-sed -i "/^GRUB_CMDLINE_LINUX=/s|\"$| resume=/swapfile resume_offset=$SWAP_OFFSET\"|" /mnt/etc/default/grub
-arch-chroot /mnt grub-mkconfig -o /boot/grub/grub.cfg
+SWAP_OFFSET=$(filefrag -v /mnt/swap/swapfile | grep " 0:" | awk '{print $4}')
+sed -i "/^GRUB_CMDLINE_LINUX=/s|\"$| resume=/swap/swapfile resume_offset=$SWAP_OFFSET\"|" /mnt/etc/default/grub
 
-# Step 10: Enable hibernation in initramfs
-info "Enabling hibernation in initramfs..."
-arch-chroot /mnt sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
-arch-chroot /mnt mkinitcpio -P
+info "Configuring resume for kernel image..."
+arch-chroot /mnt /bin/bash <<EOF 
+grub-mkconfig -o /boot/grub/grub.cfg
+sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
+mkinitcpio -P
+EOF
 
 # Step 11: Final Steps
 info "Installation complete! Unmounting and rebooting..."
 umount -R /mnt
-echo "system will now reboot!"
+echo "system will reboot into your "$HOSTNAME" install in 10 seconds:"
 sleep 10
 reboot
