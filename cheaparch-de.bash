@@ -5,7 +5,7 @@ set -e
 
 # Variables (edit these as needed)
 DISK="/dev/sda" # Replace with your actual disk
-HOSTNAME="chatarch"
+HOSTNAME="cheaparch"
 USERNAME="joe" # Replace with your desired username
 PASSWORD="joe" # Replace with your password
 SWAP_SIZE="8g" # Replace with the size of your swap
@@ -112,21 +112,29 @@ grub-mkconfig -o /boot/grub/grub.cfg
 mkinitcpio -P
 EOF
 
-# Step 11: Set up Snapper for regular snapshots
+# Step 11: Snapper Configuration (Workaround for DBus in chroot)
 info "Configuring Snapper for regular snapshots..."
-arch-chroot /mnt /bin/bash <<EOF
-snapper -c root create-config /
-snapper -c home create-config /home
+
+# We will configure Snapper outside the chroot due to DBus issues inside chroot
+
+# Create Snapper configurations for / and /home outside of the chroot
+pacman-Sy --noconfirm snapper
+snapper -c root create-config /mnt/
+snapper -c home create-config /mnt/home
 
 # Configure the snapshotting interval
-echo "TIMELINE_CREATE=yes" >> /etc/snapper/configs/root
-echo "TIMELINE_LIMIT_HOURLY=24" >> /etc/snapper/configs/root
-echo "TIMELINE_LIMIT_DAILY=5" >> /etc/snapper/configs/root
+echo "TIMELINE_CREATE=yes" >> /mnt/etc/snapper/configs/root
+echo "TIMELINE_LIMIT_HOURLY=24" >> /mnt/etc/snapper/configs/root
+echo "TIMELINE_LIMIT_DAILY=5" >> /mnt/etc/snapper/configs/root
 
-echo "TIMELINE_CREATE=yes" >> /etc/snapper/configs/home
-echo "TIMELINE_LIMIT_HOURLY=24" >> /etc/snapper/configs/home
-echo "TIMELINE_LIMIT_DAILY=5" >> /
-EOF
+echo "TIMELINE_CREATE=yes" >> /mnt/etc/snapper/configs/home
+echo "TIMELINE_LIMIT_HOURLY=24" >> /mnt/etc/snapper/configs/home
+echo "TIMELINE_LIMIT_DAILY=5" >> /mnt/etc/snapper/configs/home
+
+# Enable and start Snapper timers to run automatically
+arch-chroot /mnt systemctl enable snapper-timeline.timer
+arch-chroot /mnt systemctl start snapper-timeline.timer
+
 
 # Step 12: Final Steps
 info "Installation complete! Unmounting and rebooting..."
