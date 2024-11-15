@@ -4,11 +4,11 @@
 set -e
 
 # Variables (edit these as needed)
-DISK="/dev/sda" # Replace with your actual disk
-HOSTNAME="chatgpt"
-USERNAME="joe" # Replace with your desired username
-PASSWORD="joejoejoe" # Replace with your password
-SWAP_SIZE="8G"
+DISK="/dev/sdX" # Replace with your actual disk
+HOSTNAME="yourostname"
+USERNAME="username" # Replace with your desired username
+PASSWORD="password" # Replace with your password
+SWAP_SIZE="XG" # Replace with the size of your swap
 
 # Function to print status messages
 info() {
@@ -33,23 +33,17 @@ info "Creating BTRFS subvolumes..."
 mount "${DISK}2" /mnt
 btrfs subvolume create /mnt/@
 btrfs subvolume create /mnt/@home
-btrfs subvolume create /mnt/@var_log
-btrfs subvolume create /mnt/@var_cache
-btrfs subvolume create /mnt/@root
-btrfs subvolume create /mnt/@srv
-btrfs subvolume create /mnt/@tmp
+btrfs subvolume create /mnt/@log
+btrfs subvolume create /mnt/@cache
 umount /mnt
 
 # Step 4: Mount Subvolumes
 info "Mounting subvolumes..."
 mount -o subvol=@,compress=zstd "${DISK}2" /mnt
-mkdir -p /mnt/{home,var/log,var/cache,root,srv,tmp,boot/efi}
+mkdir -p /mnt/{home,var/log,var/cache,boot/efi}
 mount -o subvol=@home "${DISK}2" /mnt/home
 mount -o subvol=@var_log "${DISK}2" /mnt/var/log
 mount -o subvol=@var_cache "${DISK}2" /mnt/var/cache
-mount -o subvol=@root "${DISK}2" /mnt/root
-mount -o subvol=@srv "${DISK}2" /mnt/srv
-mount -o subvol=@tmp "${DISK}2" /mnt/tmp
 mount "${DISK}1" /mnt/boot/efi
 
 # Step 5: Install Base System
