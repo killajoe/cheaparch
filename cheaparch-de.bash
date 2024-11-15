@@ -102,7 +102,7 @@ EOF
 
 # Step 9: Set resume_offset in GRUB and bootimages for Hibernate
 info "Configuring hibernation with resume offset..."
-SWAP_OFFSET=$(filefrag -v /mnt/swap/swapfile | grep " 0:" | awk '{print $4}')
+SWAP_OFFSET=$(filefrag -v /mnt/swapfile | awk '/ 0:/ {print $4}' | cut -d '.' -f 1)
 sed -i "/^GRUB_CMDLINE_LINUX=/s|\"$| resume=/swap/swapfile resume_offset=$SWAP_OFFSET\"|" /mnt/etc/default/grub
 sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
 
