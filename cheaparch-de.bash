@@ -100,15 +100,15 @@ pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-
 systemctl enable NetworkManager lightdm
 EOF
 
-# Step 9: Set resume_offset in GRUB for Hibernate
+# Step 9: Set resume_offset in GRUB and bootimages for Hibernate
 info "Configuring hibernation with resume offset..."
 SWAP_OFFSET=$(filefrag -v /mnt/swap/swapfile | grep " 0:" | awk '{print $4}')
 sed -i "/^GRUB_CMDLINE_LINUX=/s|\"$| resume=/swap/swapfile resume_offset=$SWAP_OFFSET\"|" /mnt/etc/default/grub
+sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
 
 info "Configuring resume for kernel image..."
 arch-chroot /mnt /bin/bash <<EOF 
 grub-mkconfig -o /boot/grub/grub.cfg
-sed -i 's/^HOOKS=(.*)/HOOKS=(base udev autodetect modconf block filesystems keyboard fsck resume)/' /mnt/etc/mkinitcpio.conf
 mkinitcpio -P
 EOF
 
