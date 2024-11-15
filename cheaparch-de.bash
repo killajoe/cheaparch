@@ -112,7 +112,23 @@ grub-mkconfig -o /boot/grub/grub.cfg
 mkinitcpio -P
 EOF
 
-# Step 11: Final Steps
+# Step 11: Set up Snapper for regular snapshots
+info "Configuring Snapper for regular snapshots..."
+arch-chroot /mnt /bin/bash <<EOF
+snapper -c root create-config /
+snapper -c home create-config /home
+
+# Configure the snapshotting interval
+echo "TIMELINE_CREATE=yes" >> /etc/snapper/configs/root
+echo "TIMELINE_LIMIT_HOURLY=24" >> /etc/snapper/configs/root
+echo "TIMELINE_LIMIT_DAILY=5" >> /etc/snapper/configs/root
+
+echo "TIMELINE_CREATE=yes" >> /etc/snapper/configs/home
+echo "TIMELINE_LIMIT_HOURLY=24" >> /etc/snapper/configs/home
+echo "TIMELINE_LIMIT_DAILY=5" >> /
+EOF
+
+# Step 12: Final Steps
 info "Installation complete! Unmounting and rebooting..."
 umount -R /mnt
 echo "system will reboot into your "$HOSTNAME" install in 10 seconds:"
