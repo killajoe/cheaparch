@@ -53,7 +53,6 @@ mount "${DISK}1" /mnt/boot/efi
 # Step 5: Create Swap File with Hibernate Support
 info "Creating swap file..."
 btrfs filesystem mkswapfile --size "$SWAP_SIZE" --uuid clear /mnt/swap/swapfile
-swapon /mnt/swap/swapfile
 
 # Step 6: Install Base System
 info "Installing base system..."
@@ -95,7 +94,7 @@ grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=GRUB
 grub-mkconfig -o /boot/grub/grub.cfg
 
 # Install a Desktop
-pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-terminal xorg-server
+pacman -Sy --noconfirm --needed lightdm lightdm-gtk-greeter fluxbox xterm xfce4-terminal xorg-server noto-fonts pipewire pipewire-jack pipewire-pulse firefox glances
 
 # Enable necessary services
 systemctl enable NetworkManager lightdm
