@@ -42,8 +42,8 @@ info "Mounting subvolumes..."
 mount -o subvol=@,compress=zstd "${DISK}2" /mnt
 mkdir -p /mnt/{home,var/log,var/cache,boot/efi}
 mount -o subvol=@home "${DISK}2" /mnt/home
-mount -o subvol=@var_log "${DISK}2" /mnt/var/log
-mount -o subvol=@var_cache "${DISK}2" /mnt/var/cache
+mount -o subvol=@log "${DISK}2" /mnt/var/log
+mount -o subvol=@cache "${DISK}2" /mnt/var/cache
 mount "${DISK}1" /mnt/boot/efi
 
 # Step 5: Install Base System
