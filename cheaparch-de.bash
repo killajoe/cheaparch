@@ -3,7 +3,7 @@
 # Exit on error
 set -e
 
-# Variables (edit these as needed)
+# Variables (to be edited)
 DISK="/dev/sda" # Replace with your actual disk
 HOSTNAME="cheaparch"
 USERNAME="joe" # Replace with your desired username
